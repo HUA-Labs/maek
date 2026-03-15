@@ -1,0 +1,4 @@
+# maek config — Go project
+verify=go vet ./... && go test ./...
+auto_commit=true
+parallel_threshold=2

@@ -1,0 +1,4 @@
+# maek config — Next.js / TypeScript project
+verify=npx tsc --noEmit && npm run build
+auto_commit=true
+parallel_threshold=2

@@ -1,0 +1,7 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime state (these are generated per-project, not part of the repo)
+.maek/progress.md
+.maek/loop.log

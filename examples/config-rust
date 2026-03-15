@@ -1,0 +1,4 @@
+# maek config — Rust project
+verify=cargo check && cargo test
+auto_commit=true
+parallel_threshold=2

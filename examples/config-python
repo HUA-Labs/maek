@@ -1,0 +1,4 @@
+# maek config — Python project
+verify=python -m mypy . && python -m pytest
+auto_commit=true
+parallel_threshold=2
