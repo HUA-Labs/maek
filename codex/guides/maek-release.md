@@ -42,6 +42,16 @@ A good `maek-release` result should summarize four things:
 
 It should end in a clear recommendation, not just raw findings.
 
+## Decision Rule
+
+Prefer an explicit final call:
+
+- `ship`
+- `ship with known risk`
+- `do not ship`
+
+If verification could not be completed, say that directly instead of implying confidence.
+
 ## Example Prompts
 
 ```text

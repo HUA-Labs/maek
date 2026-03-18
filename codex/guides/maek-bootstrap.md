@@ -58,6 +58,16 @@ A good `maek-bootstrap` result should leave you with:
 - a short reading list
 - a clear next place to inspect
 
+## Stop Condition
+
+`maek-bootstrap` has done enough once you can state:
+
+- the exact subtree to work in
+- the current source of truth
+- the first file or command to inspect next
+
+Do not keep reading docs after that point just to feel complete.
+
 ## Example Prompts
 
 ```text

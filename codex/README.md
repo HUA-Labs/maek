@@ -4,6 +4,17 @@ Codex-oriented version of `maek`.
 
 This subtree is for Codex only. Claude-specific setup at the repository root stays separate.
 
+## Who This Is For
+
+Use this if you want Codex to work like a repo operator, not just a code generator.
+
+Best fit:
+
+- large repos with several active docs
+- package or starter workflows
+- release checks that need evidence
+- teams that want short, repeatable prompt patterns
+
 ## Included Skills
 
 - `maek-bootstrap`
@@ -42,6 +53,18 @@ Example:
 
 ```text
 Use $maek-bootstrap and establish repo context before editing code.
+```
+
+Prompting tip:
+
+- name the skill
+- state the immediate goal
+- state the output you want back
+
+Example:
+
+```text
+Use $maek-consumer-qa and verify whether this starter survives install, build, and one runtime check. Write the result as a short QA report.
 ```
 
 Recommended order:

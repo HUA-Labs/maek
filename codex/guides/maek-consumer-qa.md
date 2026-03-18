@@ -34,6 +34,17 @@ Capture these every time:
 - exact failing command
 - pass/fail runtime evidence
 
+## Order Of Operations
+
+Keep the sequence strict:
+
+1. reproduce the first failing state without local patches
+2. record commands and versions
+3. classify the failure
+4. only then apply a local workaround if the task requires a running app
+
+This prevents a later workaround from hiding the real upstream problem.
+
 ## Issue Classification
 
 Classify failures clearly:
@@ -49,6 +60,17 @@ Helpful heuristics:
 - if source looks correct but installed output fails, treat it as a publish mismatch
 - if dev works but build fails, treat it as production stability risk
 - if a starter fails `install + build`, treat it as release-blocking
+
+## Report Shape
+
+A clean `maek-consumer-qa` report should usually end with:
+
+- status: pass, blocked, or pass-with-workaround
+- first blocker
+- commands used
+- version evidence
+- local workaround, if any
+- upstream fix suggestion
 
 ## Good Output
 
