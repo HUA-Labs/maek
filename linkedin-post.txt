@@ -1,0 +1,17 @@
+maek (脈) — context that flows like a pulse
+
+脈 (maek) means "pulse" in Korean — the same character in 맥락, meaning "context." The idea: when a Claude Code session gets long, don't fight the context window — rotate it. Let state live in files, not memory.
+
+I'm a builder shipping a SaaS product with Claude Code. The pattern I kept hitting: large tasks would stall mid-session, Claude would retry the same failing approach, and I'd lose tokens + time.
+
+Inspired by Ralph Loop (file-based state) and Symphony (issue → isolate → verify), I built maek — an autonomous implementation loop that sits on top of Claude Code:
+
+- Auto task decomposition — give it a GitHub issue or PRD, it breaks it into verified, committed chunks
+- Stuck detection — same build error 3x? Switches strategy instead of retrying. This alone changed how I work.
+- Context rotation — a bash script that launches fresh sessions while state persists in files
+- Custom agents — auto-impl, parallel-impl, fix-issue handle the actual work
+
+I use this daily. It's open source:
+github.com/HUA-Labs/maek
+
+#ClaudeCode #DevTools

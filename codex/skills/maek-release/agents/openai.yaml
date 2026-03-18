@@ -1,0 +1,8 @@
+interface:
+  display_name: "maek Release"
+  short_description: "Check whether code is safe to ship."
+  brand_color: "#0F766E"
+  default_prompt: "Use $maek-release to verify release blockers, shipped artifacts, and remaining risks."
+
+policy:
+  allow_implicit_invocation: true

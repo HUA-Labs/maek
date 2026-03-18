@@ -42,9 +42,18 @@ Area C: modifies files in tests/
 
 Each area should touch different files.
 
+**Isolation options** (choose based on risk):
+- **Low risk** (different directories): Implement sequentially in same workspace
+- **Medium risk** (shared imports): Use careful ordering — types first, then consumers
+- **High risk** (overlapping files): Use git worktree isolation — each area in its own worktree, merge at the end
+
 ### 4. Integration and Verification
 
 After all areas are implemented:
+
+1. **Typecheck** — catch cross-area type mismatches early
+2. **Lint** — catch style issues
+3. **Build** — full verification
 
 Read `.maek/config` for the verify command, then run it. If no config, use common patterns.
 
@@ -67,8 +76,9 @@ Fix errors automatically (max 3 rounds).
 | Tests | tests/feature.test.ts | done |
 
 ### Verification
+- [x] Typecheck passed
+- [x] Lint passed
 - [x] Build passed
-- [x] Tests passed
 ```
 
 ## Rules
@@ -78,3 +88,4 @@ Fix errors automatically (max 3 rounds).
 - **~15 files per area** — prevent context overflow
 - **Follow existing patterns** — match the project's conventions
 - **New dependencies** — always install before importing
+- **Worktree for risky splits** — when areas might touch the same files, isolate with worktrees
