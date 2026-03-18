@@ -15,6 +15,22 @@ maek turns a GitHub issue or PRD into working code through an autonomous loop: d
 
 Both versions share the same philosophy but differ in architecture. See each directory's README for setup and usage.
 
+## Why Two Versions?
+
+The Claude and Codex versions solve the same problem — context loss and autonomous execution — but from opposite angles.
+
+| | Claude | Codex |
+|---|--------|-------|
+| **Methodology** | Lean/Agile | Structured/Waterfall |
+| **PDCA cycle** | Micro × many (5-min loops) | Macro × 1 (project-level) |
+| **Context shape** | Wide — monorepo structure, cross-package deps, session history | Deep — intent, consumer impact, release risk |
+| **Strength** | Fast iteration, stuck recovery | Judgment, verification, risk assessment |
+| **Weak spot** | Can drift in long sessions | Slower to start producing code |
+
+The Claude version runs many tiny Plan→Do→Check→Act cycles at the task level — stuck detection is essentially an automated Check→Act. The Codex version maps its four skills directly to one big PDCA cycle: bootstrap (Plan) → loop (Do) → consumer-qa (Check) → release (Act).
+
+Wide context enables speed. Deep context enables safety. A project benefits from both — use the Claude version for rapid implementation, the Codex version for release gates and consumer validation.
+
 ## Why maek?
 
 AI coding agents are powerful, but long sessions degrade. Complex tasks stall when the agent hits the same error repeatedly. And there's no built-in way to break a large task into verified, committed chunks.

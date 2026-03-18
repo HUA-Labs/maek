@@ -14,6 +14,7 @@ This guide covers advanced patterns, real-world lessons, and troubleshooting fro
 - [Monorepo Patterns](#monorepo-patterns)
 - [Orchestration Rules](#orchestration-rules)
 - [Common Pitfalls](#common-pitfalls)
+- [Two Agents, Two Philosophies](#two-agents-two-philosophies)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -443,6 +444,71 @@ If maek says it's stuck, trust it. Don't manually retry the same approach — tr
 ### 5. Background Agent Edits
 
 When delegating to background agents: **new file creation (Write) is safe in background.** But **editing existing files (Edit) in background can lose changes** if the foreground also modifies them. Keep edits in foreground.
+
+---
+
+## Two Agents, Two Philosophies
+
+maek ships with two versions — not because one is better, but because they think differently. This section documents the patterns we observed when Claude and Codex each built their own take on the same autonomous loop.
+
+### Micro PDCA vs Macro PDCA
+
+Both versions follow Plan→Do→Check→Act, but at different granularities.
+
+**Claude (micro PDCA × N):**
+```
+Plan(fix this file) → Do(edit) → Check(build) → Act(error? switch strategy)
+→ Plan → Do → Check → Act → ...    [repeats every ~5 minutes]
+```
+
+The stuck detector automates Check→Act: same error 3x triggers a strategy switch. Each cycle is tiny — one file, one build, one decision.
+
+**Codex (macro PDCA × 1):**
+```
+Plan  → maek-bootstrap (analyze the repo, find source of truth)
+Do    → maek-loop (execute the smallest verified slice)
+Check → maek-consumer-qa (can a fresh consumer use this?)
+Act   → maek-release (ship / ship with risk / do not ship)
+```
+
+The four skills map directly to one PDCA cycle at the project level. Each phase has its own stop conditions and output format.
+
+### Wide Context vs Deep Context
+
+The micro/macro difference creates different context shapes:
+
+**Claude — wide context.** It knows the monorepo structure, 20 packages' dependency graph, 30 sessions of history, which files affect which builds, and what broke last time. This width enables fast navigation: "if I change this util, these 3 packages need rebuilding." But it can drift — after 100+ tool calls, attention scatters.
+
+**Codex — deep context.** It drills into one thing: is this actually shippable? It checks source exports vs published exports, runs consumer smoke tests, verifies docs match artifacts, and produces an explicit ship/no-ship verdict. This depth catches things that fast iteration misses — like a success color being #ffffff on a light background.
+
+### When to Use Which
+
+| Situation | Better fit |
+|-----------|-----------|
+| Rapid prototyping, exploring approaches | Claude (micro PDCA) |
+| Implementing a well-defined feature | Claude (micro PDCA) |
+| Cross-package refactoring | Claude (wide context) |
+| Pre-release verification | Codex (macro PDCA) |
+| Consumer-side QA ("does npm install work?") | Codex (deep context) |
+| Code review with risk assessment | Codex (deep context) |
+| Combined: implement fast, then verify deeply | Claude → Codex |
+
+### The Best Workflow
+
+In practice, the two complement each other:
+
+1. **Claude** implements the feature through rapid micro-PDCA loops
+2. **Codex** reviews the result with structured judgment (bootstrap → QA → release gate)
+3. Claude addresses Codex's findings with another round of micro-PDCA
+4. Ship when Codex says "ship"
+
+This mirrors how human teams work: developers iterate fast, then QA/reviewers apply structured verification before release. The difference is both roles are automated.
+
+### A Note on Benchmarks
+
+Traditional AI benchmarks measure "can it solve this problem?" — pass/fail on coding challenges. But real-world AI-assisted development is about sustained quality over time: Can it maintain context across 30 sessions? Can it recover when stuck? Can it judge when something is safe to ship?
+
+maek's two versions accidentally became a case study in this. Same problem, different solutions, both valid. The interesting metric isn't which one is "smarter" — it's how their different strengths combine into a workflow that neither could achieve alone.
 
 ---
 
