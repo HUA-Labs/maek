@@ -4,6 +4,7 @@ This guide covers advanced patterns, real-world lessons, and troubleshooting fro
 
 ## Table of Contents
 
+- [Context Control Patterns](#context-control-patterns)
 - [Project Setup](#project-setup)
 - [Writing Effective PRDs](#writing-effective-prds)
 - [Task Decomposition Patterns](#task-decomposition-patterns)
@@ -14,6 +15,126 @@ This guide covers advanced patterns, real-world lessons, and troubleshooting fro
 - [Orchestration Rules](#orchestration-rules)
 - [Common Pitfalls](#common-pitfalls)
 - [Troubleshooting](#troubleshooting)
+
+---
+
+## Context Control Patterns
+
+The core insight behind maek is that **an AI agent's memory should be the filesystem, not the context window.** This principle applies far beyond automated loops — it's a general pattern for working with any AI coding agent across sessions.
+
+### The Three Layers
+
+```
+┌─────────────────────────────────────────┐
+│  MEMORY.md     Long-term knowledge      │  Persists forever
+│                (user prefs, decisions,   │  Updated rarely
+│                 architecture choices)    │
+├─────────────────────────────────────────┤
+│  CURRENT.md    Session context          │  Persists across sessions
+│                (active work, next TODOs, │  Updated each session
+│                 warnings, blockers)      │
+├─────────────────────────────────────────┤
+│  progress.md   Task execution state     │  Persists during a task
+│                (task list, stuck log,    │  Deleted when done
+│                 completion status)       │
+└─────────────────────────────────────────┘
+```
+
+Each layer has a different lifespan and purpose:
+
+| File | Scope | Lifespan | Who Updates |
+|------|-------|----------|-------------|
+| `MEMORY.md` | Project-wide knowledge | Permanent | Agent + human |
+| `CURRENT.md` | Active work context | Multi-session | Agent at session end |
+| `progress.md` | Single task execution | Single task | maek automatically |
+
+### MEMORY.md — Long-Term Knowledge
+
+Stores things the agent should always know but can't derive from code:
+
+```markdown
+# Project Memory
+
+## User Preferences
+- Korean casual tone, no emoji
+- Commit messages always in English
+
+## Architecture Decisions
+- text-primary is NOT for text (low contrast) — use text-foreground
+- motion-core is optional peer dep of hua-ui
+
+## External References
+- Pipeline bugs tracked in Linear project "INGEST"
+- Oncall dashboard: grafana.internal/d/api-latency
+```
+
+**What belongs here:** User preferences, team decisions, external system pointers, past incidents.
+
+**What doesn't:** Code patterns (read the code), git history (use git log), debugging recipes (the fix is in the code).
+
+### CURRENT.md — Session Context
+
+The handoff document between sessions. When a new session starts, reading this file should give the agent full context to continue work.
+
+```markdown
+# Current Context
+
+**Last updated**: 2024-03-18 (Session 31)
+
+## Completed
+- PR #647: Phase A/B/C normalization (MERGED)
+
+## In Progress
+- Phase D/E/F: disabled, colors, form size
+
+## Next TODO
+- [ ] Publish motion-core 2.5.0
+- [ ] Fix NextAuth Turbopack build issue
+
+## Warnings
+- sum-diary build broken on main (NextAuth dep issue, not our code)
+- sync-to-public.sh uses ALLOWLIST — add new public files explicitly
+```
+
+**Key principle:** CURRENT.md is a **lossy summary**. It captures what the code and git log can't tell you — the *why*, the *what's next*, and the *watch out for*.
+
+### progress.md — Task Execution State
+
+maek's automated state file. Tracks task-level progress within a single feature:
+
+```markdown
+# maek Progress
+## Source: https://github.com/.../issues/123
+## Started: 2024-03-18T14:00
+
+### Tasks
+- [x] T1: Add shared types (5 files)
+- [ ] T2: Implement API routes (8 files) ← current
+- [ ] T3: Add frontend components (6 files)
+
+### Stuck Log
+- 14:30 T2: `Module not found: @auth/core` → added to serverExternalPackages
+```
+
+### Combining the Layers
+
+In practice, you use all three:
+
+1. **Start of session**: Read MEMORY.md (who am I working with?) → Read CURRENT.md (what's the state?) → Resume or start new work
+2. **During work**: maek manages progress.md automatically
+3. **End of session**: Update CURRENT.md with what happened and what's next
+
+This pattern works with any AI agent — Claude, Codex, Copilot, or whatever comes next. The files are plain markdown. The agent is interchangeable; the context is permanent.
+
+### Adopting This Without maek
+
+You don't need maek to use these patterns. At minimum:
+
+1. Create a `CURRENT.md` in your project (or `.claude/memory/CURRENT.md`, or wherever your agent reads)
+2. At the end of each session, ask the agent to update it
+3. At the start of each session, the agent reads it first
+
+That alone eliminates 80% of the "context loss between sessions" problem.
 
 ---
 
@@ -202,7 +323,7 @@ AI agents degrade over long sessions:
 
 ### How maek.sh Solves It
 
-The external loop starts a **fresh Claude Code session** for each iteration:
+The external loop starts a **fresh agent session** for each iteration:
 
 ```
 Iteration 1: Fresh session → reads progress.md → works on T1 → completes → updates progress.md
@@ -210,7 +331,7 @@ Iteration 2: Fresh session → reads progress.md → works on T2 → gets stuck 
 Iteration 3: Fresh session → reads progress.md → sees stuck log → tries different approach for T2
 ```
 
-Each iteration has the full context budget. State is carried via files, not memory.
+Each iteration has the full context budget. State is carried via files, not memory. This works with any AI agent that can read/write files.
 
 ### When to Use External Loop vs Interactive
 
